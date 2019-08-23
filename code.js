@@ -526,7 +526,7 @@ Code.runPython = function() {
     fs.writeFileSync('tmp.py', code, 'utf-8');
     fs.chmodSync('tmp.py', '755');
     var command = "python3 tmp.py"
-    child_process.exec("gnome-terminal -e 'bash -c \"" + command + ";bash\"'");
+    child_process.exec("xfce4-terminal -e 'bash -c \"" + command + ";bash\"'");
   }
 };
 
