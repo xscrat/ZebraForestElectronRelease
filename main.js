@@ -22,6 +22,7 @@ function createWindow () {
 
   mainWindow.setMenu(null);
 
+  mainWindow.maximize();
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 

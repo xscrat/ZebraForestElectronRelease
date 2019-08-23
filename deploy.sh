@@ -21,7 +21,7 @@ which electron | grep / &> /dev/null
 if [ $? != 0 ]; then
 	sudo cnpm install -g electron@6.0.0 --registry=https://registry.npm.taobao.org
 fi
-sudo apt-get -y install python-pip
-sudo pip install serial
+sudo apt-get -y install python3-pip
+sudo pip3 install serial
 electron .
 

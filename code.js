@@ -55,6 +55,9 @@ Code.isBlocklyModified = false;
 Code.isPythonModified = false;
 Code.serial = '';
 Code.isClientsPanelInitialized = false;
+Code.codePrefix = 'from bm import bm\n' +
+  'bm_master=bm.bm()\n' +
+  'bm_clients=bm_master.get_clients()\n';
 
 /**
  * Extracts a parameter from the URL.
@@ -211,7 +214,7 @@ Code.tabClick = function(clickedName, shouldGenerateCode=true) {
 Code.renderContent = function() {
   var content = document.getElementById('content_' + Code.selected);
   if (content.id == 'content_python') {
-    var code = Blockly.Python.workspaceToCode(Code.workspace);
+    var code = Code.codePrefix + Blockly.Python.workspaceToCode(Code.workspace);
     Code.pythonEditor.getDoc().setValue(code);
     Code.isPythonModified = false;
   }
@@ -406,7 +409,7 @@ Code.init = function() {
 
   setInterval(() => {
     const { spawn } = require('child_process');
-    const getClientProcess = spawn('python', ['bm_master.py', 'get_clients']);
+    const getClientProcess = spawn('python3', ['bm.py', 'get_clients']);
     getClientProcess.stdout.on('data', function(data) {
       gCurrentClients = JSON.parse(data);
       if (!Code.isClientsPanelInitialized) {
@@ -420,10 +423,10 @@ Code.init = function() {
 
 Code.getClientsInfo = function() {
   const { spawn } = require('child_process');
-  const getClientsInfoProcess = spawn('python', ['bm_master.py', 'get_clients_info']);
+  const getClientsInfoProcess = spawn('python3', ['bm.py', 'get_clients_info', JSON.stringify(gCurrentClients)]);
   getClientsInfoProcess.stdout.on('data', function(data) {
     var clientsInfo = JSON.parse(data);
-    var clientsInfoHTML = '<table><tr class="blankRowLarge"><td></td></tr>';
+    var clientsInfoHTML = '<table width="90%"><tr class="blankRowLarge"><td width="100%"></td></tr>';
     for (var i = 0; i < clientsInfo.length; i++) {
       clientsInfoHTML += '<tr><td>';
       clientsInfoHTML += '<table class="spriteInfoTable">';
@@ -501,15 +504,28 @@ Code.initLanguage = function() {
  * Just a quick and dirty eval.  Catch infinite loops.
  */
 Code.runPython = function() {
+  var generator = Blockly.Python;
+  var editorCode = Code.pythonEditor.getDoc().getValue();
+  var code = '';
+  if (!editorCode) {
+    if (Code.checkAllGeneratorFunctionsDefined(generator)) {
+      code = Code.codePrefix + generator.workspaceToCode(Code.workspace);
+    } else {
+      alert('转换python代码失败');
+      return false;
+    }
+  } else {
+    code = editorCode;
+  }
+
   var platform = window.navigator.platform;
   var child_process = require('child_process');
-  var code = Blockly.Python.workspaceToCode(Code.workspace);
   if (platform.indexOf('Win') != -1) {
-    child_process.exec("start cmd.exe /K python -c ".concat("'", code, "'"));
+    child_process.exec("start cmd.exe /K python3 -c ".concat("'", code, "'"));
   } else {
     fs.writeFileSync('tmp.py', code, 'utf-8');
     fs.chmodSync('tmp.py', '755');
-    var command = "python tmp.py"
+    var command = "python3 tmp.py"
     child_process.exec("gnome-terminal -e 'bash -c \"" + command + ";bash\"'");
   }
 };
@@ -535,12 +551,6 @@ Code.refreshDocumentTitle = function() {
   }
   document.title = '斑码妈妈-' + displayFileName;
   document.getElementById('title').textContent = document.title;
-}
-
-Code.showCode = function() {
-  var code = Blockly.Python.workspaceToCode(Code.workspace);
-  console.log(code);
-  return code;
 }
 
 Code.trySaveFirst = function() {
@@ -572,6 +582,9 @@ Code.trySaveFirst = function() {
 }
 
 Code.doSaveBlockly = function(filename) {
+  if (!filename) {
+    alert("Filename is empty");
+  }
   var xml = Blockly.Xml.workspaceToDom(Code.workspace);
   var xml_text = Blockly.Xml.domToText(xml);
   try {
@@ -582,17 +595,17 @@ Code.doSaveBlockly = function(filename) {
   }
   var pythonFilename = filename + '.py'
   var generator = Blockly.Python;
-  var currentCode = Code.pythonEditor.getDoc().getValue();
+  var editorCode = Code.pythonEditor.getDoc().getValue();
   var saveCode = '';
-  if (!currentCode) {
+  if (!editorCode) {
     if (Code.checkAllGeneratorFunctionsDefined(generator)) {
-      saveCode = generator.workspaceToCode(Code.workspace);
+      saveCode = Code.codePrefix + generator.workspaceToCode(Code.workspace);
     } else {
       alert('转换python代码失败');
       return false;
     }
   } else {
-    saveCode = currentCode;
+    saveCode = editorCode;
   }
   try {
     fs.writeFileSync(pythonFilename, saveCode, 'utf-8');

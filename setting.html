@@ -91,7 +91,7 @@
     }
 
     window.onload = function() {
-      var python = require('child_process').spawn('python', ['bm_master.py', 'get_serial_ports']);
+      var python = require('child_process').spawn('python3', ['bm.py', 'get_serial_ports']);
       python.stdout.on('data',function(data){
         var serial_options = JSON.parse(data);
         for (var i in serial_options) {

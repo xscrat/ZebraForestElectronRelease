@@ -1,1 +1,1 @@
-var gCurrentClients = [1,2];
+var gCurrentClients = ['1', '2'];
