@@ -9,18 +9,20 @@ const BrowserWindow = electron.BrowserWindow
 let mainWindow
 
 function createWindow () {
+  const menu = electron.Menu;
+  menu.setApplicationMenu(null);
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
-	  width: 800,
-	  height: 600,
-	  webPreferences: {
-      nodeIntegration: true
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      autoHideMenuBar: true,
     },
     title: '斑马妈妈-未命名',
     icon: 'icon.png',
-	})
-
-  mainWindow.setMenu(null);
+  })
 
   mainWindow.maximize();
   // and load the index.html of the app.
